@@ -87,7 +87,6 @@ echo "----------------------------------------"
 # Remove plugin related files
 removepkg &name;-&version;
 while read package; do
-  echo "Removing package $package, please wait...!"
   removepkg $package
   rm -f /boot/extra/$package
 done &lt; "/boot/config/plugins/un-get/installedpackages_list"
