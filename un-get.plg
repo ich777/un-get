@@ -1,0 +1,93 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "un-get">
+  <!ENTITY author    "ich777">
+  <!ENTITY version   "2022.08.22">
+  <!ENTITY gitURL    "https://github.com/&author;/&name;/raw/master">
+  <!ENTITY pluginURL "&gitURL;/&name;.plg">
+  <!ENTITY md5       "2dd9f7475a5a8a1553e0d3c6e1633fbc">
+  <!ENTITY plugin    "/boot/config/plugins/&name;">
+  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+]>
+
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
+
+<CHANGES>
+
+###2022.08.22
+- Changed name from pkg-get to un-get - because well unRAID needs un-get
+- Changed from Slackware 15 to Current
+- Created sources.list file to support multiple repositories
+- Added Conraid's repository to sources.list by default
+- Changed installation directory to /boot/extra
+- Redone download, installation and remove functions
+- Added 'installed' option, to list installed packages by un-get
+- Added 'changelog' option
+- Changed search to show both installed and non installed packages which are availabel in repositories
+- Added 'upgrade' function
+- Speed up search by a bit
+- Clarified remove message when no packages where found
+- Fixed bug where packages won't be removed after calling 'remove' function
+- Fixed bug where error was displayed if installedpackages_list file where not in place
+
+###2022.08.20
+- Initial release from pkg-get
+
+</CHANGES>
+
+<FILE Run="/bin/bash">
+<INLINE>
+rm -f $(ls /boot/config/plugins/&name;/&name;*.txz 2>/dev/null|grep -v '&version;')
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/&name;-&version;.txz" Run="upgradepkg --install-new">
+<URL>&gitURL;/packages/&name;-&version;.txz</URL>
+<MD5>&md5;</MD5>
+</FILE>
+
+<FILE Name="&emhttp;/README.md">
+<INLINE>
+**un-get**
+
+un-get is a simple command line tool to install/update/remove Slackware packages to unRAID.
+Start by opening a Terminal and type in 'un-get --help'
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+
+# Create sources list file with the initial repositories
+if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
+  if [ ! -d /boot/config/plugins/un-get ]; then
+    mkdir -p /boot/config/plugins/un-get
+  fi
+  echo "https://mirrors.slackware.com/slackware/slackware-current/slackware/ current
+https://slack.conraid.net/repository/slackware64-current/ conraid" > /boot/config/plugins/un-get/sources.list
+
+# Create symlink so that un-get is available system wide
+ln -s /usr/local/emhttp/plugins/un-get/un-get /usr/bin/un-get
+
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+echo "----------------------------------------"
+echo "----------Uninstalling un-get-----------"
+echo "----------------------------------------"
+# Remove plugin related files
+removepkg &name;-&version;
+rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &plugin;
+echo
+echo "----------------------------------------"
+echo "---Uninstallation of un-get complete!---"
+echo "----------------------------------------"
+echo
+
+</INLINE>
+</FILE>
+</PLUGIN>
