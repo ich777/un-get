@@ -1,0 +1,487 @@
+#!/bin/bash
+set -f
+
+# Get installed packages
+# remove lines which are empty and which has no numbers in it <- possible plugin packages
+INSTALLED_PKGS="$(ls -1 /var/log/packages/)"
+
+download_checksums() {
+  echo "Please wait obtaining checksums from repository $2..."
+  if wget -q --show-progress --progress=dot:mega -O /tmp/un-get/checksums-${2} "${1}/CHECKSUMS.md5" ; then
+    echo "Checksums from repository $2 successfully downloaded!"
+    if [ -f /tmp/un-get/filelist-${2}.old ]; then
+      rm -f /tmp/un-get/filelist-${2}.old /tmp/un-get/checksums-${2}.old
+    fi
+  else
+    rm -f /tmp/un-get/filelist-${2}
+    rm -f /tmp/un-get/checksums-${2}
+    if [ -f /tmp/un-get/filelist-${2}.old ]; then
+      echo "Can't fetch package list from repository $2, restoring old list, please try again later...!"
+      mv /tmp/un-get/filelist-${2}.old /tmp/un-get/filelist-${2}
+      mv /tmp/un-get/checksums-${2}.old /tmp/un-get/checksums-${2}
+    else
+      echo "Can't fetch checksums from repository $2, please try again later...!"
+    fi
+  fi
+}
+
+download_filelist() {
+  echo "Please wait obtaining package list from repository $2..."
+  if wget -q --show-progress --progress=dot:mega -O /tmp/un-get/filelist-${2} "${1}/FILE_LIST" ; then
+    echo "Package list from repository $2 successfully downloaded!"
+    echo
+    download_checksums "$1" "$2"
+  else
+    # Workaround from repositories which use 'FILELIST.TXT' instead of 'FILE_LIST' eg. Conraids repository
+    if wget -q --show-progress --progress=dot:mega -O /tmp/un-get/filelist-${2} "${1}/FILELIST.TXT" ; then
+      echo "Package list from repository $2 successfully  downloaded!"
+      echo
+      download_checksums "$1" "$2"
+    else
+      rm -f /tmp/un-get/filelist-${2}
+      if [ -f /tmp/un-get/filelist-${2}.old ]; then
+        echo "Can't fetch package list, restoring old list, please try again later...!"
+        mv /tmp/un-get/filelist-${2}.old /tmp/un-get/filelist-${2}
+        mv /tmp/un-get/checksums-${2}.old /tmp/un-get/checksums-${2}
+      else
+        echo "Can't fetch package list from repository $2, please try again later...!"
+      fi
+    fi
+  fi
+}
+
+update() {
+# Create folder if non exists
+if [ ! -d /tmp/un-get ]; then
+  mkdir -p /tmp/un-get
+fi
+
+# Check for sources.list file
+if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
+  if [ ! -d /boot/config/plugins/un-get ]; then
+    mkdir -p /boot/config/plugins/un-get
+  fi
+  echo "https://mirrors.slackware.com/slackware/slackware-current/slackware/ current
+https://slack.conraid.net/repository/slackware64-current/ conraid" > /boot/config/plugins/un-get/sources.list
+fi
+
+# Read sources.list file and download 
+while read source; do
+  download_filelist "${source% *}" "${source##* }"
+done < "/boot/config/plugins/un-get/sources.list"
+}
+
+download_package() {
+  if [ ! -d /boot/extra ]; then
+    mkdir -p /boot/extra
+  fi
+  if [ ! -f /boot/config/plugins/un-get/installedpackages_list ]; then
+    touch /boot/config/plugins/un-get/installedpackages_list
+  fi
+  if wget -q --show-progress --progress=dot:mega -O /boot/extra/${3##*/} "${2}/$3" ; then
+    if [ ! "$(grep "${3##*/}" /boot/config/plugins/un-get/installedpackages_list)" ]; then
+      echo "${3##*/}" >> /boot/config/plugins/un-get/installedpackages_list
+    fi
+  else
+    rm -f /boot/extra/${3##*/}
+    echo "Can't download package $1, please try again later...!"
+    exit 1
+  fi
+}
+
+install_package() {
+  if [ "$(grep "$1" /boot/config/plugins/un-get/installedpackages_list)" ]; then
+    if [ "$(grep "${1%.*}" <<< "${INSTALLED_PKGS}")" ]; then
+      echo "Package $1 already installed, skipping!"
+    else
+      if [ "$(cat /tmp/un-get/checksums-${2} | grep "$1" | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | awk '{print $1}')" == "$(md5sum /boot/extra/$1 | awk '{print $1}')" ]; then
+        upgradepkg --install-new /boot/extra/$1
+      else
+        echo "Checksum error, please try to reinstall the package again!"
+        rm /boot/extra/$1
+        sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+      fi
+    fi
+  else
+    echo "Something went wrong, package $1 not found"
+  fi
+}
+
+upgrade_package() {
+  OLD_PKG="$(ls -1 /boot/extra/ | grep "$1-[0-9]")"
+  sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+  if wget -q --show-progress --progress=dot:mega -O /boot/extra/${3##*/} "${2}/$3" ; then
+    sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+    rm -f /boot/extra/${OLD_PKG}
+    echo "${3##*/}" >> /boot/config/plugins/un-get/installedpackages_list
+  else
+    rm -f /boot/extra/${3##*/}
+    echo "Can't download package $1, please try again later...!"
+    exit 1
+  fi
+}
+
+remove_package() {
+  removepkg "$(grep "$1-[0-9]" <<< "${INSTALLED_PKGS}")"
+  rm -f /boot/extra/$(ls -1 /boot/extra/ | grep "$1") 2>/dev/null
+  sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+}
+
+list_installed() {
+  if [ ! "$(find /boot/config/plugins/un-get/ -empty -name "installedpackages_list")" ] && [ -f /boot/config/plugins/un-get/installedpackages_list ]; then
+    echo "Currently installed package(s) by un-get:"
+    cat /boot/config/plugins/un-get/installedpackages_list
+  else
+    echo "No packages which are installed by un-get found!"
+  fi
+}
+
+package_list_check() {
+  if [ ! "$(find /tmp/un-get/ -name 'filelist-*' 2>/dev/null)" ]; then
+    echo "Please run 'un-get update' first!"
+    exit 1
+  fi
+}
+
+package_installed_check() {
+  if [ "$(echo "$INSTALLED_PKGS" | grep $1)" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+package_available_check() {
+  if [ "$(echo "$PACKAGES_AVAILABLE" | grep "/$1-[0-9]")" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+package_installed_list_check() {
+  if [ "$(echo "$PACKAGE_LIST_INSTALLED" | grep "$1-[0-9]")" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+search() {
+  PACKAGE_SEARCH="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | grep -i "$1" | awk '{print $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '/' -f3)"
+  if [ ! -z "${PACKAGE_SEARCH}" ]; then
+    echo "Please wait, performing search..."
+    for p in ${PACKAGE_SEARCH}
+    do
+      PACKAGE="$(echo ${p%-*-*})"
+      package_installed_check "${PACKAGE%-*}"
+      if [ "$?" == 0 ]; then
+        if [ ! -z "${INSTALLED}" ]; then
+          INSTALLED="${INSTALLED} ${PACKAGE}"
+        else
+	  INSTALLED="${PACKAGE}"
+        fi
+      else
+        if [ ! -z "${NOT_INSTALLED}" ]; then
+          NOT_INSTALLED="${NOT_INSTALLED} ${PACKAGE}"
+        else
+          NOT_INSTALLED="${PACKAGE}"
+        fi
+      fi
+    done
+    echo "Found the following package(s) for you search '$1' in repositories:"
+    if [ ! -z "${NOT_INSTALLED}" ]; then
+      echo "${NOT_INSTALLED// /$'\n'}"
+    fi
+    if [ ! -z "${INSTALLED}" ]; then
+      echo "${INSTALLED// /$'\n'}"
+    fi
+    exit 0
+  else
+    echo "Found no packages matching your search '$1'."
+    exit 1
+  fi
+}
+
+install() {
+  PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+  for p in $@
+  do
+    package_available_check $p
+    if [ "$?" == 0 ]; then
+      if [ ! -z "${PACKAGE_LIST}" ]; then
+        PACKAGE_LIST="${PACKAGE_LIST} $p"
+      else
+        PACKAGE_LIST="$p"
+      fi
+    else
+      if [ ! -z "${FAILED_LIST}" ]; then
+        FAILED_LIST="${FAILED_LIST} $p"
+      else
+        FAILED_LIST="$p"
+      fi
+    fi
+  done
+  if [ -z "${FAILED_LIST}" ]; then
+    echo "The following package(s) will be installed: ${PACKAGE_LIST}"
+    read -r -p "Are you sure? [y/N] " response
+    response=${response,,}
+    if [[ "$response" =~ ^(yes|y)$ ]]; then
+      for p in ${PACKAGE_LIST}
+      do
+        TOP_URL="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | awk '{print $2}' | sed 's/^[.]//')"
+        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+        URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
+        download_package "$p" "${URL}" "${TOP_URL}"
+      done
+      for p in ${PACKAGE_LIST}
+      do
+        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+        REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
+        PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}")"
+        install_package "${PACKAGE_NAME##*/}" "${REPO}"
+      done
+    else
+      echo "Abort!"
+      exit 1
+    fi
+  else
+    echo "Can't find package(s): ${FAILED_LIST// /, }!"
+    exit 1
+  fi
+}
+
+upgrade() {
+  if [ ! "$(find /boot/config/plugins/un-get/ -empty -name "installedpackages_list")" ] && [ -f /boot/config/plugins/un-get/installedpackages_list ]; then
+    INSTALLED_PACKAGES="$(cat /boot/config/plugins/un-get/installedpackages_list)"
+    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+    for p in ${INSTALLED_PACKAGES}
+    do
+      AVAIL_V="$(grep ${p%-*-*-*} <<< $PACKAGES_AVAILABLE)"
+      COMPARE="${AVAIL_V##*/}
+${p}"
+      SORTED="$(sort -V <<< "$COMPARE" | tail -1)"
+      if [ "${p}" != "${SORTED}" ]; then
+       if [ ! -z "${UPGRADE_PACKAGES}" ]; then
+          UPGRADE_PACKAGES="${UPGRADE_PACKAGES} ${SORTED%-*-*-*-*}"
+        else
+	  UPGRADE_PACKAGES="${SORTED%-*-*-*}"
+        fi
+      fi
+    done
+    if [ ! -z "${UPGRADE_PACKAGES}" ]; then
+      echo "Following packages will be upgraded: ${UPGRADE_PACKAGES// /, }"
+      read -r -p "Are you sure? [y/N] " response
+      response=${response,,}
+      if [[ "$response" =~ ^(yes|y)$ ]]; then
+        for p in ${UPGRADE_PACKAGES}
+        do
+          TOP_URL="$(grep "/${p%}-[0-9]" <<< "${PACKAGES_AVAILABLE}" | awk '{print $2}' | sed 's/^[.]//')"
+          REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+          URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
+          upgrade_package "$p" "${URL}" "${TOP_URL}"
+        done
+        for p in ${UPGRADE_PACKAGES}
+        do
+          REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+          REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
+          PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}")"
+          install_package "${PACKAGE_NAME##*/}" "${REPO}"
+      done
+      else
+        echo "Abort!"
+        exit 1
+      fi
+    fi
+  else
+    echo "Nothing to upgrade, no packages which are installed by un-get found!"
+  fi 
+}
+
+remove() {
+  PACKAGE_LIST_INSTALLED="$(cat /boot/config/plugins/un-get/installedpackages_list)"
+  for p in $@
+  do
+    package_installed_list_check $p
+    if [ "$?" == 0 ]; then
+      if [ ! -z "${PACKAGE_LIST}" ]; then
+        PACKAGE_LIST="${PACKAGE_LIST} $p"
+      else
+	PACKAGE_LIST="$p"
+      fi
+    else
+      if [ ! -z "${FAILED_LIST}" ]; then
+        FAILED_LIST="${FAILED_LIST} $p"
+      else
+        FAILED_LIST="$p"
+      fi
+    fi
+  done
+  if [ -z "${FAILED_LIST}" ]; then
+    echo "The following package(s) will be removed: ${PACKAGE_LIST}"
+    read -r -p "Are you sure? [y/N] " response
+    response=${response,,}
+    if [[ "$response" =~ ^(yes|y)$ ]]; then
+      for p in ${PACKAGE_LIST}
+      do
+        remove_package "$p"
+      done
+    else
+      echo "Abort!"
+      exit 1
+    fi
+  else
+    echo "Can't find any package(s) named: ${FAILED_LIST// /, } installed by un-get!"
+    exit 1
+  fi
+}
+
+usage_general() {
+  echo "Slackware package installation tool for unRAID."
+  echo
+  echo "un-get is a package download and installation tool"
+  echo "for unRAID for Slackware package repositories."
+  echo
+  echo "Most used commands are:"
+  echo "  update - Updates the packages list locally"
+  echo "  install - Downloads and installs packages"
+  echo "  upgrade - Upgrades packages installed by un-get"
+  echo "  remove - Removes packages installed by un-get"
+  echo "  search - Searches for available packages"
+  echo "  installed - Lists all packages installed by un-get"
+  echo
+  echo "Example usages:"
+  echo "  un-get update"
+  echo "  un-get search python"
+  echo "  un-get install python3 python-pip"
+  echo "  un-get remove python3 python-pip"
+  echo "  un-get installed"
+  echo "  un-get upgrade"
+  echo
+  echo "Written by Christoph Hummer for unRAID."
+  exit 0
+}
+
+usage_search() {
+  echo "Usage example:"
+  echo "  un-get search python3"
+  echo
+  echo "Search only accepts one package at a time!"
+  echo "You don't have to specify wildcards!"
+  exit 0
+}
+
+usage_install() {
+  echo "Usage example:"
+  echo "  un-get install python3"
+  echo "  un-get install python-pip python-setuptools"
+  exit 0
+}
+
+usage_remove() {
+  echo "Usage example:"
+  echo "  un-get remove python3"
+  echo "  un-get remove python-pip python-setuptools"
+  exit 0
+}
+
+version() {
+  echo "Written by Christoph Hummer for unRAID."
+  echo "Version: 0.03"
+  echo "Date: 2022-08-22"
+  echo "Dual-licensed under MIT or UNLICENSE."
+  exit 0
+}
+
+changelog() {
+  echo "Version: 0.01"
+  echo "Date: 2022-08-20"
+  echo
+  echo "- Initial release from pkg-get"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.02"
+  echo "Date: 2022-08-22"
+  echo
+  echo "- Changed name from pkg-get to un-get - because well unRAID needs un-get"
+  echo "- Changed from Slackware 15 to Current"
+  echo "- Created sources.list file to support multiple repositories"
+  echo "- Added Conraid's repository to sources.list by default"
+  echo "- Changed installation directory to /boot/extra"
+  echo "- Redone download, installation and remove functions"
+  echo "- Added 'installed' option, to list installed packages by un-get"
+  echo "- Added 'changelog' option"
+  echo "- Changed search to show both installed and non installed packages which"
+  echo "  are availabel in repositories"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.03"
+  echo "Date: 2022-08-22"
+  echo
+  echo "- Added 'upgrade' function"
+  echo "- Speed up search by a bit"
+  echo "- Clarified remove message when no packages where found"
+  echo "- Fixed bug where packages won't be removed after calling 'remove' function"
+  echo "- Fixed bug where error was displayed if installedpackages_list file where"
+  echo "  not in place"
+  echo
+}
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  usage_general
+  exit 0
+elif [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
+  version
+  exit 0
+elif [ "$1" == "install" ]; then
+  package_list_check
+  if [ $(expr $# - 1) -lt 1 ]; then
+    usage_install
+    exit 1
+  elif [ "$(echo "${@:2}" | tr -dc '[:alnum:]\n\r')" == "pkgget" ]; then
+    usage_install
+    exit 1
+  else
+    install "${@:2}"
+  fi
+elif [ "$1" == "remove" ]; then
+  if [ $(expr $# - 1) -lt 1 ]; then
+    usage_remove
+    exit 1
+  elif [ "$(echo "${@:2}" | tr -dc '[:alnum:]\n\r')" == "pkgget" ]; then
+    usage_remove
+    exit 1
+  else
+    remove "${@:2}"
+  fi
+elif [ "$1" == "search" ]; then
+  package_list_check
+  if [ $(expr $# - 1) -lt 1 ]; then
+    usage_search
+    exit 1
+  elif [ $(expr $# - 1) -gt 1 ]; then
+    usage_search
+    exit 1
+  elif [ "$(echo "${@:2}" | tr -dc '[:alnum:]\n\r')" == "pkgget" ]; then
+    usage_search
+    exit 1
+  else
+    search "${@:2}"
+  fi
+elif [ "$1" == "installed" ]; then
+  list_installed
+elif [ "$1" == "upgrade" ]; then
+  upgrade
+elif [ "$1" == "update" ]; then
+  update
+elif [ "$1" == "changelog" ]; then
+  changelog
+elif [ -z "$1" ]; then
+  usage_general
+  exit 1
+else
+  usage_general
+  exit 1
+fi
