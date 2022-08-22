@@ -5,7 +5,7 @@
   <!ENTITY version   "2022.08.22">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
-  <!ENTITY md5       "2dd9f7475a5a8a1553e0d3c6e1633fbc">
+  <!ENTITY md5       "25a2916a278b05fe0f66ba6374f30f0d">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -64,10 +64,16 @@ if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
     mkdir -p /boot/config/plugins/un-get
   fi
   echo "https://mirrors.slackware.com/slackware/slackware-current/slackware/ current
-https://slack.conraid.net/repository/slackware64-current/ conraid" > /boot/config/plugins/un-get/sources.list
+https://slack.conraid.net/repository/slackware64-current/ conraid" &gt; /boot/config/plugins/un-get/sources.list
+fi
+
+# Create packages file
+touch /boot/config/plugins/un-get/installedpackages_list
 
 # Create symlink so that un-get is available system wide
-ln -s /usr/local/emhttp/plugins/un-get/un-get /usr/bin/un-get
+if [ ! -L /usr/bin/un-get ]; then
+  ln -s /usr/local/emhttp/plugins/un-get/un-get /usr/bin/un-get
+fi
 
 </INLINE>
 </FILE>
@@ -80,8 +86,15 @@ echo "----------Uninstalling un-get-----------"
 echo "----------------------------------------"
 # Remove plugin related files
 removepkg &name;-&version;
+while read package; do
+  echo "Removing package $package, please wait...!"
+  removepkg $package
+  rm -f /boot/extra/$package
+done &lt; "/boot/config/plugins/un-get/installedpackages_list"
 rm -rf /usr/local/emhttp/plugins/&name;
 rm -rf &plugin;
+rm -f /usr/bin/un-get
+rm -rf /tmp/un-get
 echo
 echo "----------------------------------------"
 echo "---Uninstallation of un-get complete!---"
