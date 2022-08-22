@@ -204,7 +204,7 @@ search() {
 }
 
 install() {
-  PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+  PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
   for p in $@
   do
     package_available_check $p
@@ -229,14 +229,16 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        TOP_URL="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | awk '{print $2}' | sed 's/^[.]//')"
-        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+        TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
+        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
         download_package "$p" "${URL}" "${TOP_URL}"
       done
       for p in ${PACKAGE_LIST}
       do
-        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGES_AVAILABLE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
+        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+        REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
         PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}")"
         install_package "${PACKAGE_NAME##*/}" "${REPO}"
