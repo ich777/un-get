@@ -269,7 +269,7 @@ upgrade() {
     PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
     for p in ${INSTALLED_PACKAGES}
     do
-      AVAIL_V="$(grep ${p%-*-*-*} <<< $PACKAGES_AVAILABLE)"
+      AVAIL_V="$(grep "${p%-*-*-*}-[0-9]" <<< $PACKAGES_AVAILABLE)"
       COMPARE="${AVAIL_V##*/}
 ${p}"
       SORTED="$(sort -V <<< "$COMPARE" | tail -1)"
@@ -401,7 +401,7 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.05"
+  echo "Version: 0.06"
   echo "Date: 2022-08-23"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
@@ -458,6 +458,13 @@ changelog() {
   echo "Date: 2022-08-23"
   echo
   echo "- upgrade function - fixed upgrade message issue"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.06"
+  echo "Date: 2022-08-23"
+  echo
+  echo "- upgrade function - fixed bug in upgrade package detection"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
