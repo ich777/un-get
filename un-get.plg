@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.08.22">
+  <!ENTITY version   "2022.08.23">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
-  <!ENTITY md5       "25a2916a278b05fe0f66ba6374f30f0d">
+  <!ENTITY md5       "194ac8dedc92d453a7474e0aa09e96d2">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,11 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
 
 <CHANGES>
+
+###2022.08.23
+- search function - made it more clear if packages are already installed that they not qualify for reinstallation through un-get
+- install function - throw a real error if package is found which is not qualifying for reinstallation through un-get
+- upgrade function - added message when all packages are up-to-date
 
 ###2022.08.22
 - Changed name from pkg-get to un-get - because well unRAID needs un-get
@@ -88,12 +93,12 @@ echo "----------------------------------------"
 removepkg &name;-&version;
 while read package; do
   removepkg $package
-  rm -f /boot/extra/$package
+  rm -f /boot/extra/$package 2&gt;/dev/null
 done &lt; "/boot/config/plugins/un-get/installedpackages_list"
 rm -rf /usr/local/emhttp/plugins/&name;
 rm -rf &plugin;
-rm -f /usr/bin/un-get
-rm -rf /tmp/un-get
+rm -f /usr/bin/un-get 2&gt;/dev/null
+rm -rf /tmp/un-get 2&gt;/dev/null
 echo
 echo "----------------------------------------"
 echo "---Uninstallation of un-get complete!---"
