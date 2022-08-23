@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.08.23">
+  <!ENTITY version   "2022.08.23a">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
-  <!ENTITY md5       "194ac8dedc92d453a7474e0aa09e96d2">
+  <!ENTITY md5       "0b115c390ef5d066d8ae701c6000e5f8">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,11 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
 
 <CHANGES>
+
+###2022.08.23a
+- upgrade function - fixed upgrade message issue
+- changed icon
+- added check if installedpackages_list exist
 
 ###2022.08.23
 - search function - made it more clear if packages are already installed that they not qualify for reinstallation through un-get
@@ -73,7 +78,9 @@ https://slack.conraid.net/repository/slackware64-current/ conraid" &gt; /boot/co
 fi
 
 # Create packages file
-touch /boot/config/plugins/un-get/installedpackages_list
+if [ ! -f /boot/config/plugins/un-get/installedpackages_list ]; then
+  touch /boot/config/plugins/un-get/installedpackages_list
+fi
 
 # Create symlink so that un-get is available system wide
 if [ ! -L /usr/bin/un-get ]; then
