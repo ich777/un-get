@@ -106,7 +106,8 @@ echo "----------------------------------------"
 # Remove plugin related files
 removepkg &name;-&version;
 while read package; do
-  removepkg $package
+  echo "Removing package: $package, please wait!"
+  removepkg $package 2&gt;/dev/null
   rm -f /boot/extra/$package 2&gt;/dev/null
 done &lt; "/boot/config/plugins/un-get/installedpackages_list"
 rm -rf /usr/local/emhttp/plugins/&name;
