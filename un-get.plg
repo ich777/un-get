@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.08.23b">
+  <!ENTITY version   "2022.08.23c">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
-  <!ENTITY md5       "16f5294cab4d845856ae3fa703dc9cbd">
+  <!ENTITY md5       "dc302c4c0bf3ae9ac78e9c89c7494cbb">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,10 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
 
 <CHANGES>
+
+###2022.08.23c
+- changed repo to Slackware 15.0
+- remove old package lists from repositories which are not found in sources.list
 
 ###2022.08.23b
 - upgrade function - fixed bug in upgrade package detection
@@ -76,7 +80,7 @@ if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
   if [ ! -d /boot/config/plugins/un-get ]; then
     mkdir -p /boot/config/plugins/un-get
   fi
-  echo "https://mirrors.slackware.com/slackware/slackware-current/slackware/ current
+  echo "https://mirrors.slackware.com/slackware/slackware64-15.0/slackware64/ 15.0
 https://slack.conraid.net/repository/slackware64-current/ conraid" &gt; /boot/config/plugins/un-get/sources.list
 fi
 
