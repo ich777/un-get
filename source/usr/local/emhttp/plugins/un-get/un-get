@@ -112,10 +112,10 @@ upgrade_package() {
   sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
   if wget -q --show-progress --progress=dot:mega -O /boot/extra/${3##*/} "${2}/$3" ; then
     sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
-    rm -f /boot/extra/${OLD_PKG}
+    rm -f /boot/extra/${OLD_PKG} 2>/dev/null
     echo "${3##*/}" >> /boot/config/plugins/un-get/installedpackages_list
   else
-    rm -f /boot/extra/${3##*/}
+    rm -f /boot/extra/${3##*/} 2>/dev/null
     echo "Can't download package $1, please try again later...!"
     exit 1
   fi
@@ -177,9 +177,9 @@ search() {
       package_installed_check "${PACKAGE%-*}"
       if [ "$?" == 0 ]; then
         if [ ! -z "${INSTALLED}" ]; then
-          INSTALLED="${INSTALLED} ${PACKAGE}"
+          INSTALLED="${INSTALLED} ${PACKAGE%-*}"
         else
-	  INSTALLED="${PACKAGE}"
+	  INSTALLED="${PACKAGE%-*}"
         fi
       else
         if [ ! -z "${NOT_INSTALLED}" ]; then
@@ -189,11 +189,16 @@ search() {
         fi
       fi
     done
-    echo "Found the following package(s) for you search '$1' in repositories:"
     if [ ! -z "${NOT_INSTALLED}" ]; then
+      echo "Found the following package(s) for you search '$1' in repositories:"
       echo "${NOT_INSTALLED// /$'\n'}"
+      if [ ! -z "${INSTALLED}" ]; then
+        echo
+      fi
     fi
     if [ ! -z "${INSTALLED}" ]; then
+      echo "Found the following installed package(s) already installed on your"
+      echo "system which are not qualifying for reinstall through un-get:"
       echo "${INSTALLED// /$'\n'}"
     fi
     exit 0
@@ -209,6 +214,11 @@ install() {
   do
     package_available_check $p
     if [ "$?" == 0 ]; then
+      package_installed_check $p
+      if [ "$?" == 0 ]; then
+        echo "Package $p is already installed on your system! ABORT!"
+        exit 1
+      fi
       if [ ! -z "${PACKAGE_LIST}" ]; then
         PACKAGE_LIST="${PACKAGE_LIST} $p"
       else
@@ -265,7 +275,7 @@ ${p}"
       SORTED="$(sort -V <<< "$COMPARE" | tail -1)"
       if [ "${p}" != "${SORTED}" ]; then
        if [ ! -z "${UPGRADE_PACKAGES}" ]; then
-          UPGRADE_PACKAGES="${UPGRADE_PACKAGES} ${SORTED%-*-*-*-*}"
+          UPGRADE_PACKAGES="${UPGRADE_PACKAGES} ${SORTED%-*-*-*}"
         else
 	  UPGRADE_PACKAGES="${SORTED%-*-*-*}"
         fi
@@ -294,6 +304,8 @@ ${p}"
         echo "Abort!"
         exit 1
       fi
+    else
+      echo "All your installed packages installed through un-get are up-to-date!"
     fi
   else
     echo "Nothing to upgrade, no packages which are installed by un-get found!"
@@ -389,8 +401,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.03"
-  echo "Date: 2022-08-22"
+  echo "Version: 0.05"
+  echo "Date: 2022-08-23"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -429,6 +441,23 @@ changelog() {
   echo "- Fixed bug where error was displayed if installedpackages_list file where"
   echo "  not in place"
   echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.04"
+  echo "Date: 2022-08-23"
+  echo
+  echo "- search function - made it more clear if packages are already installed"
+  echo "  that they not qualify for reinstallation through un-get"
+  echo "- install function - throw a real error if package is found which is"
+  echo "  not qualifying for reinstallation through un-get"
+  echo "- upgrade function - added message when all packages are up-to-date"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.05"
+  echo "Date: 2022-08-23"
+  echo
+  echo "- upgrade function - fixed upgrade message issue"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
@@ -475,6 +504,7 @@ elif [ "$1" == "search" ]; then
 elif [ "$1" == "installed" ]; then
   list_installed
 elif [ "$1" == "upgrade" ]; then
+  package_list_check
   upgrade
 elif [ "$1" == "update" ]; then
   update
