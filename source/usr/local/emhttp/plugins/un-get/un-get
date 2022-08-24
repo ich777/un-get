@@ -57,18 +57,18 @@ if [ ! -d /tmp/un-get ]; then
 fi
 
 # Check for sources.list file
-if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
-  if [ ! -d /boot/config/plugins/un-get ]; then
-    mkdir -p /boot/config/plugins/un-get
-  fi
-  echo "https://mirrors.slackware.com/slackware/slackware-current/slackware/ current
-https://slack.conraid.net/repository/slackware64-current/ conraid" > /boot/config/plugins/un-get/sources.list
-fi
-
-# Read sources.list file and download 
+# Read sources.list file and download packagelists
 while read source; do
   download_filelist "${source% *}" "${source##* }"
+  if [ -z "${SOURCES}" ]; then
+    SOURCES="${source##* }"
+  else
+    SOURCES="${SOURCES}|${source##* }"
+  fi
 done < "/boot/config/plugins/un-get/sources.list"
+if [ ! -z ${SOURCES} ]; then
+  rm -f $(find /tmp/un-get/ -type f | grep -Ev "${SOURCES}")
+fi
 }
 
 download_package() {
@@ -84,6 +84,7 @@ download_package() {
     fi
   else
     rm -f /boot/extra/${3##*/}
+    echo $3
     echo "Can't download package $1, please try again later...!"
     exit 1
   fi
@@ -239,7 +240,7 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -247,10 +248,10 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1-)"
+        PACKAGE="$(grep -R -H -i "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
-        PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}")"
+        PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
         install_package "${PACKAGE_NAME##*/}" "${REPO}"
       done
     else
@@ -401,8 +402,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.06"
-  echo "Date: 2022-08-23"
+  echo "Version: 0.08"
+  echo "Date: 2022-08-24"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -465,6 +466,23 @@ changelog() {
   echo "Date: 2022-08-23"
   echo
   echo "- upgrade function - fixed bug in upgrade package detection"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.07"
+  echo "Date: 2022-08-23"
+  echo
+  echo "- changed repo to Slackware 15.0"
+  echo "- remove old package lists from repositories which are not found"
+  echo "  in sources.list"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.08"
+  echo "Date: 2022-08-24"
+  echo
+  echo "- fixed bug so that un-get pulls always the latest package"
+  echo "  regardless from which repository"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
