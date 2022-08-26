@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.08.25b">
+  <!ENTITY version   "2022.08.26">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
-  <!ENTITY md5       "c3ef06d2d65dbac4a65d8a8bb856a3ba">
+  <!ENTITY md5       "d93f35b9a7e246bb0988fa4cd09dccf5">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
 
 <CHANGES>
+
+###2022.08.26
+- added cleanup function
 
 ###2022.08.25b
 - fixed bug in search where some packages where marked as not qualifying for installation
