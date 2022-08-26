@@ -145,7 +145,7 @@ package_list_check() {
 }
 
 package_installed_check() {
-  if [ "$(echo "$INSTALLED_PKGS" | grep $1)" ]; then
+  if [ "$(echo "$INSTALLED_PKGS" | grep "$1-[0-9]")" ]; then
     return 0
   else
     return 1
@@ -180,7 +180,7 @@ search() {
         if [ ! -z "${INSTALLED}" ]; then
           INSTALLED="${INSTALLED} ${PACKAGE%-*}"
         else
-	  INSTALLED="${PACKAGE%-*}"
+	        INSTALLED="${PACKAGE%-*}"
         fi
       else
         if [ ! -z "${NOT_INSTALLED}" ]; then
@@ -200,7 +200,8 @@ search() {
     if [ ! -z "${INSTALLED}" ]; then
       echo "Found the following installed package(s) already installed on your"
       echo "system which are not qualifying for reinstall through un-get:"
-      echo "${INSTALLED// /$'\n'}"
+      INSTALLED="${INSTALLED// /$'\n'}"
+      echo "$(awk '!seen[$0]++' <<< "${INSTALLED}")"
     fi
     exit 0
   else
@@ -351,6 +352,44 @@ remove() {
   fi
 }
 
+cleanup() {
+  BOOT_PKGS="$(ls -1 /boot/extra/)"
+  PACKAGE_LIST_INSTALLED="$(cat /boot/config/plugins/un-get/installedpackages_list)"
+  for p in ${BOOT_PKGS}
+  do
+    if [ ! $(grep ${p%.*} <<< "${INSTALLED_PKGS}") ]; then
+      if [ -z "${CLEANUP_LIST}" ]; then
+        CLEANUP_LIST="${p}"
+      else
+        CLEANUP_LIST="${CLEANUP_LIST} ${p}"
+      fi
+    fi
+  done
+  if [ ! -z "${CLEANUP_LIST}" ]; then
+    echo "Found the following package(s) which can be cleaned up:"
+    echo "${CLEANUP_LIST// /, }"
+    echo
+    echo "This will will delete the above listed package(s) from '/boot/extra'"
+    read -r -p "Are you sure? [y/N] " response
+    response=${response,,}
+    if [[ "$response" =~ ^(yes|y)$ ]]; then
+      cd /boot/extra
+      rm -f ${CLEANUP_LIST}
+    fi
+    echo
+    echo "Please wait, checking if package list is up-to-date...!"
+    for p in ${PACKAGE_LIST_INSTALLED}
+    do
+      if [ ! $(grep ${p%.*} <<< "${INSTALLED_PKGS}") ]; then
+        sed -i "/$p/d" /boot/config/plugins/un-get/installedpackages_list
+      fi
+    done
+    echo "Done!"
+  else
+    echo "Nothing to clean up!"
+  fi
+}
+
 usage_general() {
   echo "Slackware package installation tool for unRAID."
   echo
@@ -364,6 +403,10 @@ usage_general() {
   echo "  remove - Removes packages installed by un-get"
   echo "  search - Searches for available packages"
   echo "  installed - Lists all packages installed by un-get"
+  echo "  cleanup - Will remove all packages/files in the '/boot/extra' directory which"
+  echo "            are currently not installed on your server, regardless if they"
+  echo "            where installed through un-get or not"
+  echo "            ATTENTION: This will delete files which are not packages too"
   echo
   echo "Example usages:"
   echo "  un-get update"
@@ -372,6 +415,7 @@ usage_general() {
   echo "  un-get remove python3 python-pip"
   echo "  un-get installed"
   echo "  un-get upgrade"
+  echo "  un-get cleanup"
   echo
   echo "Written by Christoph Hummer for unRAID."
   exit 0
@@ -402,8 +446,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.08"
-  echo "Date: 2022-08-24"
+  echo "Version: 0.11"
+  echo "Date: 2022-08-26"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -483,6 +527,29 @@ changelog() {
   echo
   echo "- fixed bug so that un-get pulls always the latest package"
   echo "  regardless from which repository"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.09"
+  echo "Date: 2022-08-25a"
+  echo
+  echo "- remove duplicate entries for packages which are not qualifying"
+  echo "  for installation"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.10"
+  echo "Date: 2022-08-25b"
+  echo
+  echo "- fixed bug in search where some packages where marked as not"
+  echo "  qualifying for installation"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.11"
+  echo "Date: 2022-08-26"
+  echo
+  echo "- added cleanup function"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
@@ -533,6 +600,8 @@ elif [ "$1" == "upgrade" ]; then
   upgrade
 elif [ "$1" == "update" ]; then
   update
+elif [ "$1" == "cleanup" ]; then
+  cleanup
 elif [ "$1" == "changelog" ]; then
   changelog
 elif [ -z "$1" ]; then
