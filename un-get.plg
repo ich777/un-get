@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.08.27a">
+  <!ENTITY version   "2022.09.25">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
-  <!ENTITY md5       "4c15234ed11ad4a6c1e9fdebeb18e7b2">
+  <!ENTITY md5       "dc88b4ffc5d507cca8acaa287839752c">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3">
 
 <CHANGES>
+
+###2022.09.25
+- fixed bug where some packages would not install properly
 
 ###2022.08.27a
 - fixed bug in upgrade routine
