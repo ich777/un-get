@@ -241,7 +241,7 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -249,7 +249,7 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".asc|.md5" | cut -d '.' -f1- | sort -V | tail -1)"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
         PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
@@ -448,8 +448,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.13"
-  echo "Date: 2022-08-27"
+  echo "Version: 0.14"
+  echo "Date: 2022-09-25"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -567,6 +567,13 @@ changelog() {
   echo "Date: 2022-08-27"
   echo
   echo "- fixed bug in upgrade routine"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.14"
+  echo "Date: 2022-09-25"
+  echo
+  echo "- fixed bug where some packages would not install properly"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
