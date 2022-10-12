@@ -595,7 +595,7 @@ changelog() {
   echo "Version: 0.17"
   echo "Date: 2022-10-12"
   echo
-  echo "- fixed bug in checksum routine where some packages won't installed"
+  echo "- fixed bug in checksum routine where some packages won't install"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
