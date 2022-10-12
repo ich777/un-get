@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.10.02">
+  <!ENTITY version   "2022.10.12">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
-  <!ENTITY md5       "d4edcf3e698514af373daa2f2f05c749">
+  <!ENTITY md5       "67586a32aeb0b579355259620ddd6eab">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3" support="https://github.com/ich777/un-get">
 
 <CHANGES>
+
+###2022.10.12
+- fixed bug in checksum routine where some packages won't install
 
 ###2022.10.02
 - fixed bug in update routine where some packages won't update properly
