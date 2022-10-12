@@ -95,7 +95,7 @@ install_package() {
     if [ "$(grep "${1%.*}" <<< "${INSTALLED_PKGS}")" ]; then
       echo "Package $1 already installed, skipping!"
     else
-      if [ "$(cat /tmp/un-get/checksums-${2} | grep "$1" | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | awk '{print $1}')" == "$(md5sum /boot/extra/$1 | awk '{print $1}')" ]; then
+      if [ "$(cat /tmp/un-get/checksums-${2} | grep -w "$1" | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | awk '{print $1}')" == "$(md5sum /boot/extra/$1 | awk '{print $1}')" ]; then
         upgradepkg --install-new /boot/extra/$1
       else
         echo "Checksum error, please try to reinstall the package again!"
@@ -449,8 +449,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.16"
-  echo "Date: 2022-10-02"
+  echo "Version: 0.17"
+  echo "Date: 2022-10-12"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -582,12 +582,20 @@ changelog() {
   echo "Date: 2022-09-26"
   echo
   echo "- fixed bug where some packages would not download/install properly"
+  echo
   echo "----------------------------------------"
   echo
   echo "Version: 0.16"
   echo "Date: 2022-10-02"
   echo
   echo "- fixed bug in update routine where some packages won't update properly"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.17"
+  echo "Date: 2022-10-12"
+  echo
+  echo "- fixed bug in checksum routine where some packages won't installed"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
