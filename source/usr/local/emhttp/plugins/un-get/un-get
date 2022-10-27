@@ -83,7 +83,7 @@ download_package() {
       echo "${3##*/}" >> /boot/config/plugins/un-get/installedpackages_list
     fi
   else
-    rm -f /boot/extra/${3##*/}
+    rm -f /boot/extra/${3##*/} 2>/dev/null
     echo $3
     echo "Can't download package $1, please try again later...!"
     exit 1
@@ -99,7 +99,7 @@ install_package() {
         upgradepkg --install-new /boot/extra/$1
       else
         echo "Checksum error, please try to reinstall the package again!"
-        rm /boot/extra/$1
+        rm /boot/extra/$1 2>/dev/null
         sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
       fi
     fi
@@ -169,7 +169,7 @@ package_installed_list_check() {
 }
 
 search() {
-  PACKAGE_SEARCH="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | grep -i "$1" | awk '{print $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '/' -f3)"
+  PACKAGE_SEARCH="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | grep -i "$1" | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | rev | cut -d '/' -f1 | rev)"
   if [ ! -z "${PACKAGE_SEARCH}" ]; then
     echo "Please wait, performing search..."
     for p in ${PACKAGE_SEARCH}
@@ -191,7 +191,7 @@ search() {
       fi
     done
     if [ ! -z "${NOT_INSTALLED}" ]; then
-      echo "Found the following package(s) for you search '$1' in repositories:"
+      echo "Found the following package(s) for your search '$1' in repositories:"
       echo "${NOT_INSTALLED// /$'\n'}"
       if [ ! -z "${INSTALLED}" ]; then
         echo
@@ -211,7 +211,7 @@ search() {
 }
 
 install() {
-  PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1-)"
+  PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5")"
   for p in $@
   do
     package_available_check $p
@@ -241,7 +241,7 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -249,7 +249,7 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
         PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
@@ -268,7 +268,7 @@ install() {
 upgrade() {
   if [ ! "$(find /boot/config/plugins/un-get/ -empty -name "installedpackages_list")" ] && [ -f /boot/config/plugins/un-get/installedpackages_list ]; then
     INSTALLED_PACKAGES="$(cat /boot/config/plugins/un-get/installedpackages_list)"
-    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1-)"
+    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1-)"
     for p in ${INSTALLED_PACKAGES}
     do
       AVAIL_V="$(grep -w "${p%-*-*-*}-[0-9]" <<< $PACKAGES_AVAILABLE)"
@@ -291,7 +291,7 @@ ${p}"
       if [[ "$response" =~ ^(yes|y)$ ]]; then
         for p in ${UPGRADE_PACKAGES}
         do
-          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -299,7 +299,7 @@ ${p}"
         done
         for p in ${UPGRADE_PACKAGES}
         do
-          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $8}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
           PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
@@ -310,7 +310,7 @@ ${p}"
         exit 1
       fi
     else
-      echo "All your installed packages installed through un-get are up-to-date!"
+      echo "All your installed packages through un-get are up-to-date!"
     fi
   else
     echo "Nothing to upgrade, no packages which are installed by un-get found!"
@@ -449,8 +449,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.17"
-  echo "Date: 2022-10-12"
+  echo "Version: 0.18"
+  echo "Date: 2022-10-27"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -596,6 +596,16 @@ changelog() {
   echo "Date: 2022-10-12"
   echo
   echo "- fixed bug in checksum routine where some packages won't install"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.18"
+  echo "Date: 2022-10-27"
+  echo
+  echo "- fixed a few typos"
+  echo "- fix for search/install routine when package list doesn't follow the"
+  echo "  Slackware standard"
+  echo "- minor changes and cleanup to search/install/upgrade routine"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
