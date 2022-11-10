@@ -241,7 +241,8 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -249,10 +250,12 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        PACKAGE="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | grep -v "\-$p-[0-9]\+" | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+        TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
-        PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
+        PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | grep "${TOP_URL}" | sort -V | tail -1)"
         install_package "${PACKAGE_NAME##*/}" "${REPO}"
       done
     else
@@ -291,7 +294,8 @@ ${p}"
       if [[ "$response" =~ ^(yes|y)$ ]]; then
         for p in ${UPGRADE_PACKAGES}
         do
-          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -299,10 +303,12 @@ ${p}"
         done
         for p in ${UPGRADE_PACKAGES}
         do
-          PACKAGE="$(grep -R -H -i -w "$p-[0-9]" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
-          PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | sort -V | tail -1)"
+          PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | grep "${TOP_URL}" | sort -V | tail -1)"
           install_package "${PACKAGE_NAME##*/}" "${REPO}"
       done
       else
@@ -449,8 +455,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.18"
-  echo "Date: 2022-10-27"
+  echo "Version: 0.19"
+  echo "Date: 2022-11-10"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -606,6 +612,18 @@ changelog() {
   echo "- fix for search/install routine when package list doesn't follow the"
   echo "  Slackware standard"
   echo "- minor changes and cleanup to search/install/upgrade routine"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.19"
+  echo "Date: 2022-11-10"
+  echo
+  echo "- fixed bug in install routine if package is found in multiple sources"
+  echo "  where the correct version is downloaded but installation fails"
+  echo "- fixed bug in install routine which doesn't always install latest version"
+  echo "  if package is available in multiple sources"
+  echo "- fixed bug in upgrade routine which doesn't always install latest version"
+  echo "  if package is available in multiple source"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
