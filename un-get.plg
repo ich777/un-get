@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.10.27">
+  <!ENTITY version   "2022.11.10">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
-  <!ENTITY md5       "2b91f669a1f32856457dab3d0d9ebd5e">
+  <!ENTITY md5       "6d40a78dce8fbdf884e4c6c8f71407fd">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,12 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3" support="https://github.com/ich777/un-get">
 
 <CHANGES>
+
+###2022.11.10
+- fixed bug in install routine if package is found in multiple sources where the correct version is downloaded but installation fails
+- fixed bug in install routine which doesn't always install latest version if package is available in multiple sources
+- fixed bug in upgrade routine which doesn't always install latest version if package is available in multiple source
+
 
 ###2022.10.27
 - fixed a few typos
