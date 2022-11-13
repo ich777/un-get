@@ -59,13 +59,15 @@ fi
 # Check for sources.list file
 # Read sources.list file and download packagelists
 while read source; do
-  download_filelist "${source% *}" "${source##* }"
-  if [ -z "${SOURCES}" ]; then
-    SOURCES="${source##* }"
-  else
-    SOURCES="${SOURCES}|${source##* }"
+  if [ "${source::1}" != "#" ]; then
+    download_filelist "${source% *}" "${source##* }"
+    if [ -z "${SOURCES}" ]; then
+      SOURCES="${source##* }"
+    else
+      SOURCES="${SOURCES}|${source##* }"
+    fi
   fi
-done < "/boot/config/plugins/un-get/sources.list"
+done <<< "$(cat /boot/config/plugins/un-get/sources.list | sed '/^$/d')"
 if [ ! -z ${SOURCES} ]; then
   rm -f $(find /tmp/un-get/ -type f | grep -Ev "${SOURCES}")
 fi
@@ -455,8 +457,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.19"
-  echo "Date: 2022-11-10"
+  echo "Version: 0.20"
+  echo "Date: 2022-11-13"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -624,6 +626,13 @@ changelog() {
   echo "  if package is available in multiple sources"
   echo "- fixed bug in upgrade routine which doesn't always install latest version"
   echo "  if package is available in multiple source"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.20"
+  echo "Date: 2022-11-13"
+  echo
+  echo "- fixed bug in update routine for commented and empty lines"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
