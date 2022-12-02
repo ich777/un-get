@@ -16,3 +16,8 @@ If you find a bug or have some kind of issue with un-get please use the issue tr
 - Use this only if you really, really, really need some additional package on unRAID  
 (I would always recommend that you use Docker containers, LXC containers or VMs instead of running it on bare metal)
 - This tool is currently in development but should get the job just done fine
+
+**INSTALLATION**
+- In the Unraid web UI, go to "Plugins", then "Install Plugin"
+- Paste `https://raw.githubusercontent.com/ich777/un-get/master/un-get.plg` into the text field that is labelled "Enter URL of remote plugin file or local plugin file"
+- Click "Install"
