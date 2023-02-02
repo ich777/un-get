@@ -97,7 +97,7 @@ install_package() {
     if [ "$(grep "${1%.*}" <<< "${INSTALLED_PKGS}")" ]; then
       echo "Package $1 already installed, skipping!"
     else
-      if [ "$(cat /tmp/un-get/checksums-${2} | grep -w "$1" | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | awk '{print $1}')" == "$(md5sum /boot/extra/$1 | awk '{print $1}')" ]; then
+      if [ "$(cat /tmp/un-get/checksums-${2} | grep -w "$1" | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | awk '{print $1}')" == "$(md5sum /boot/extra/$1 | awk '{print $1}')" ]; then
         upgradepkg --install-new /boot/extra/$1
       else
         echo "Checksum error, please try to reinstall the package again!"
@@ -171,7 +171,7 @@ package_installed_list_check() {
 }
 
 search() {
-  PACKAGE_SEARCH="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | grep -i "$1" | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | rev | cut -d '/' -f1 | rev)"
+  PACKAGE_SEARCH="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | grep -i "$1" | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | rev | cut -d '/' -f1 | rev)"
   if [ ! -z "${PACKAGE_SEARCH}" ]; then
     echo "Please wait, performing search..."
     for p in ${PACKAGE_SEARCH}
@@ -213,7 +213,7 @@ search() {
 }
 
 install() {
-  PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5")"
+  PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256")"
   for p in $@
   do
     package_available_check $p
@@ -243,8 +243,8 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
-        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -252,8 +252,8 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
-        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
         REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
@@ -273,7 +273,7 @@ install() {
 upgrade() {
   if [ ! "$(find /boot/config/plugins/un-get/ -empty -name "installedpackages_list")" ] && [ -f /boot/config/plugins/un-get/installedpackages_list ]; then
     INSTALLED_PACKAGES="$(cat /boot/config/plugins/un-get/installedpackages_list)"
-    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1-)"
+    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1-)"
     for p in ${INSTALLED_PACKAGES}
     do
       AVAIL_V="$(grep -w "${p%-*-*-*}-[0-9]" <<< $PACKAGES_AVAILABLE)"
@@ -296,8 +296,8 @@ ${p}"
       if [[ "$response" =~ ^(yes|y)$ ]]; then
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
-          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
@@ -305,8 +305,8 @@ ${p}"
         done
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
-          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5" | cut -d '.' -f1- | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | cut -d ':' -f1)"
           REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
@@ -457,8 +457,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.20"
-  echo "Date: 2022-11-13"
+  echo "Version: 0.21"
+  echo "Date: 2023-02-02"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -633,6 +633,13 @@ changelog() {
   echo "Date: 2022-11-13"
   echo
   echo "- fixed bug in update routine for commented and empty lines"
+  echo
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.21"
+  echo "Date: 2023-02-02"
+  echo
+  echo "- fixed bug for repositories with .sha256 files"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
