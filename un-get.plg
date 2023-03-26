@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2023.03.23">
+  <!ENTITY version   "2023.03.26">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
   <!ENTITY md5       "21dcff234217bd3b4b69c9489de939ed">
@@ -14,7 +14,7 @@
 
 <CHANGES>
 
-###2023.03.23
+###2023.03.26
 - another bugfix for commented line(s) in sources.list
 
 ###2023.03.17
