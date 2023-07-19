@@ -16,8 +16,8 @@
 
 ###2023.07.19
 - added '--force'/'-f' option to 'upgrade' to force a update from packages. The option 'un-get upgrade --force' will pull all existing packages again but don't install them in case you change from Slackware 15.0 to current or vice versa.
-The new packages will be installed on reboot. ATTENTION: If packages are not found in the new repositories they will be uninstalled immediately after confirming the force upgrade."
-- fixed bug in remove_package routine"
+The new packages will be installed on reboot. ATTENTION: If packages are not found in the new repositories they will be uninstalled immediately after confirming the force upgrade.
+- fixed bug in remove_package routine
 
 ###2023.03.26
 - another bugfix for commented line(s) in sources.list
