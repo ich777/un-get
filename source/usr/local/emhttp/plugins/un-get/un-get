@@ -124,9 +124,26 @@ upgrade_package() {
   fi
 }
 
+force_upgrade_package() {
+  OLD_PKG="$(ls -1 /boot/extra/ | grep "^$1-[0-9]")"
+  mv /boot/extra/${OLD_PKG} /tmp/un-get_temp/ 2>/dev/null
+  sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+  if wget -q --show-progress --progress=dot:mega -O /boot/extra/${3##*/} "${2}/$3" ; then
+    sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
+    rm -f /tmp/un-get_temp/${OLD_PKG}
+    echo "${3##*/}" >> /boot/config/plugins/un-get/installedpackages_list
+  else
+    rm -f /boot/extra/${3##*/} 2>/dev/null
+    echo "Can't download package $1, please try again later...!"
+    echo "Restoring old package ${OLD_PKG} to /boot/extra...!"
+    mv /tmp/un-get_temp/${OLD_PKG} /boot/extra/ 2>/dev/null
+    exit 1
+  fi
+}
+
 remove_package() {
   removepkg "$(grep "^$1-[0-9]" <<< "${INSTALLED_PKGS}")"
-  rm -f /boot/extra/$(ls -1 /boot/extra/ | grep "^$1") 2>/dev/null
+  rm -f /boot/extra/$(ls -1 /boot/extra/ | grep "^$1-[0-9]") 2>/dev/null
   sed -i "/$1/d" /boot/config/plugins/un-get/installedpackages_list
 }
 
@@ -273,7 +290,7 @@ install() {
 upgrade() {
   if [ ! "$(find /boot/config/plugins/un-get/ -empty -name "installedpackages_list")" ] && [ -f /boot/config/plugins/un-get/installedpackages_list ]; then
     INSTALLED_PACKAGES="$(cat /boot/config/plugins/un-get/installedpackages_list)"
-    PACKAGES_AVAILABLE="$(grep -R -H -i "$1" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1-)"
+    PACKAGES_AVAILABLE="$(grep -R "" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1-)"
     for p in ${INSTALLED_PACKAGES}
     do
       AVAIL_V="$(grep -w "${p%-*-*-*}-[0-9]" <<< $PACKAGES_AVAILABLE)"
@@ -289,7 +306,63 @@ ${p}"
         fi
       fi
     done
-    if [ ! -z "${UPGRADE_PACKAGES}" ]; then
+    if [ "${1}" == "force" ]; then
+      INSTALLED_PACKAGES="$(cat /boot/config/plugins/un-get/installedpackages_list)"
+      PACKAGES_AVAILABLE="$(grep -R "" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1-)"
+      for p in ${INSTALLED_PACKAGES}
+      do
+        AVAIL_V="$(grep -w "${p%-*-*-*}-[0-9]" <<< $PACKAGES_AVAILABLE)"
+        SORT_V="$(echo "$AVAIL_V" | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        if [ -z "${SORT_V}" ]; then
+          if [ ! -z "${NOT_FOUND}" ]; then
+            NOT_FOUND="${NOT_FOUND} ${p%-*-*-*}"
+          else
+            NOT_FOUND="${p%-*-*-*}"
+          fi
+        elif [ ! -z "${UPGRADE_PACKAGES}" ]; then
+          UPGRADE_PACKAGES="${UPGRADE_PACKAGES} ${SORT_V%-*-*-*}"
+        else
+  	      UPGRADE_PACKAGES="${SORT_V%-*-*-*}"
+        fi
+      done
+      echo "Following packages will be force upgraded and installed on next boot:"
+      echo "${UPGRADE_PACKAGES// /, }"
+      if [ ! -z "${NOT_FOUND}" ]; then
+        echo
+        echo "ATTENTION"
+        echo "The following packages could not be found and will be removed now"
+        echo "after confirmation: ${NOT_FOUND// /, }"
+        echo
+      fi
+      read -r -p "Are you sure? [y/N] " response
+      response=${response,,}
+      if [[ "$response" =~ ^(yes|y)$ ]]; then
+        if [ ! -d /tmp/un-get_temp ]; then
+          mkdir -p /tmp/un-get_temp
+        fi
+        for p in ${UPGRADE_PACKAGES}
+        do
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
+          TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
+          REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
+          URL="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $1}' | sed 's:/*$::')"
+          force_upgrade_package "$p" "${URL}" "${TOP_URL}"
+        done
+        if [ ! -z "${NOT_FOUND}" ]; then
+          for p in ${NOT_FOUND}
+          do
+            remove_package "$p"
+          done
+        fi
+        rm -rf /tmp/un-get_temp
+        echo
+        echo "Please reboot your system to install the upgraded packages!"
+      else
+        echo "Abort!"
+        exit 1
+      fi
+    elif [ ! -z "${UPGRADE_PACKAGES}" ]; then
       echo "Following packages will be upgraded: ${UPGRADE_PACKAGES// /, }"
       read -r -p "Are you sure? [y/N] " response
       response=${response,,}
@@ -312,7 +385,7 @@ ${p}"
           REPO="$(awk -v line=$REPO_LINE 'NR==line' /boot/config/plugins/un-get/sources.list | awk '{print $2}')"
           PACKAGE_NAME="$(grep "/$p-[0-9]" <<< "${PACKAGES_AVAILABLE}" | grep "${TOP_URL}" | sort -V | tail -1)"
           install_package "${PACKAGE_NAME##*/}" "${REPO}"
-      done
+        done
       else
         echo "Abort!"
         exit 1
@@ -408,16 +481,21 @@ usage_general() {
   echo "for unRAID for Slackware package repositories."
   echo
   echo "Most used commands are:"
-  echo "  update - Updates the packages list locally"
-  echo "  install - Downloads and installs packages"
-  echo "  upgrade - Upgrades packages installed by un-get"
-  echo "  remove - Removes packages installed by un-get"
-  echo "  search - Searches for available packages"
+  echo "  update    - Updates the packages list locally"
+  echo "  install   - Downloads and installs packages"
+  echo "  upgrade   - Upgrades packages installed by un-get"
+  echo "              Adding '--force' or '-f' will force an upgrade from all"
+  echo "              packages, the packages will be install after a reboot."
+  echo "              This comes in handy if the repository is switched."
+  echo "              Missing packages from the new repository will be removed"
+  echo "              immediately after confirming the force upgrade!"
+  echo "  remove    - Removes packages installed by un-get"
+  echo "  search    - Searches for available packages"
   echo "  installed - Lists all packages installed by un-get"
-  echo "  cleanup - Will remove all packages/files in the '/boot/extra' directory which"
-  echo "            are currently not installed on your server, regardless if they"
-  echo "            where installed through un-get or not"
-  echo "            ATTENTION: This will delete files which are not packages too"
+  echo "  cleanup   - Will remove all packages/files in the '/boot/extra' directory"
+  echo "              which are currently not installed on your server, regardless"
+  echo "              if they where installed through un-get or not"
+  echo "              ATTENTION: This will delete files which are not packages too"
   echo
   echo "Example usages:"
   echo "  un-get update"
@@ -426,6 +504,7 @@ usage_general() {
   echo "  un-get remove python3 python-pip"
   echo "  un-get installed"
   echo "  un-get upgrade"
+  echo "  un-get upgrade --force"
   echo "  un-get cleanup"
   echo
   echo "Written by Christoph Hummer for unRAID."
@@ -457,8 +536,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.23"
-  echo "Date: 2023-03-26"
+  echo "Version: 0.24"
+  echo "Date: 2023-07-19"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -655,6 +734,18 @@ changelog() {
   echo "Date: 2023-03-26"
   echo
   echo "- another bugfix for commented line(s) in sources.list"
+  echo "----------------------------------------"
+  echo
+  echo "Version: 0.24"
+  echo "Date: 2023-07-19"
+  echo
+  echo "- added '--force'/'-f' option to 'upgrade' to force a update from packages"
+  echo "  The option 'un-get upgrade --force' will pull all existing packages again"
+  echo "  but don't install them in case you change from Slackware 15.0 to current"
+  echo "  or vice versa. The new packages will be installed on reboot."
+  echo "  ATTENTION: If packages are not found in the new repositories they will be"
+  echo "  uninstalled immediately after confirming the force upgrade."
+  echo "- fixed bug in remove_package routine"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
@@ -700,6 +791,9 @@ elif [ "$1" == "search" ]; then
   fi
 elif [ "$1" == "installed" ]; then
   list_installed
+elif [ "$1" == "upgrade" ] && [ "$2" == "--force" ] || [ "$2" == "-f" ]; then
+  package_list_check
+  upgrade "force"
 elif [ "$1" == "upgrade" ]; then
   package_list_check
   upgrade
