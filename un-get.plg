@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2023.07.19">
+  <!ENTITY version   "2023.11.12">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
-  <!ENTITY md5       "10c83e59d53f84372871e86a0b93087c">
+  <!ENTITY md5       "1186bbfe25a85462394b08ae7f27811a">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
@@ -13,6 +13,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3" support="https://github.com/ich777/un-get">
 
 <CHANGES>
+
+###2023.11.12
+- Corrections for spelling and grammatical errors in user-visible statements - thank you GitHub user kcpants
 
 ###2023.07.19
 - added '--force'/'-f' option to 'upgrade' to force a update from packages. The option 'un-get upgrade --force' will pull all existing packages again but don't install them in case you change from Slackware 15.0 to current or vice versa.
