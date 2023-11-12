@@ -34,7 +34,7 @@ download_filelist() {
   else
     # Workaround from repositories which use 'FILELIST.TXT' instead of 'FILE_LIST' eg. Conraids repository
     if wget -q --show-progress --progress=dot:mega -O /tmp/un-get/filelist-${2} "${1}/FILELIST.TXT" ; then
-      echo "Package list from repository $2 successfully  downloaded!"
+      echo "Package list from repository $2 successfully downloaded!"
       echo
       download_checksums "$1" "$2"
     else
@@ -485,7 +485,7 @@ usage_general() {
   echo "  install   - Downloads and installs packages"
   echo "  upgrade   - Upgrades packages installed by un-get"
   echo "              Adding '--force' or '-f' will force an upgrade from all"
-  echo "              packages, the packages will be install after a reboot."
+  echo "              packages, the packages will be installed after a reboot."
   echo "              This comes in handy if the repository is switched."
   echo "              Missing packages from the new repository will be removed"
   echo "              immediately after confirming the force upgrade!"
@@ -494,7 +494,7 @@ usage_general() {
   echo "  installed - Lists all packages installed by un-get"
   echo "  cleanup   - Will remove all packages/files in the '/boot/extra' directory"
   echo "              which are currently not installed on your server, regardless"
-  echo "              if they where installed through un-get or not"
+  echo "              if they were installed through un-get or not"
   echo "              ATTENTION: This will delete files which are not packages too"
   echo
   echo "Example usages:"
@@ -536,8 +536,8 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.24"
-  echo "Date: 2023-07-19"
+  echo "Version: 0.25"
+  echo "Date: 2023-11-12"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
@@ -562,7 +562,7 @@ changelog() {
   echo "- Added 'installed' option, to list installed packages by un-get"
   echo "- Added 'changelog' option"
   echo "- Changed search to show both installed and non installed packages which"
-  echo "  are availabel in repositories"
+  echo "  are available in repositories"
   echo
   echo "----------------------------------------"
   echo
@@ -571,7 +571,7 @@ changelog() {
   echo
   echo "- Added 'upgrade' function"
   echo "- Speed up search by a bit"
-  echo "- Clarified remove message when no packages where found"
+  echo "- Clarified remove message when no packages were found"
   echo "- Fixed bug where packages won't be removed after calling 'remove' function"
   echo "- Fixed bug where error was displayed if installedpackages_list file where"
   echo "  not in place"
@@ -631,7 +631,7 @@ changelog() {
   echo "Version: 0.10"
   echo "Date: 2022-08-25b"
   echo
-  echo "- fixed bug in search where some packages where marked as not"
+  echo "- fixed bug in search where some packages were marked as not"
   echo "  qualifying for installation"
   echo
   echo "----------------------------------------"
@@ -739,13 +739,20 @@ changelog() {
   echo "Version: 0.24"
   echo "Date: 2023-07-19"
   echo
-  echo "- added '--force'/'-f' option to 'upgrade' to force a update from packages"
+  echo "- added '--force'/'-f' option to 'upgrade' to force an update from packages"
   echo "  The option 'un-get upgrade --force' will pull all existing packages again"
   echo "  but don't install them in case you change from Slackware 15.0 to current"
   echo "  or vice versa. The new packages will be installed on reboot."
   echo "  ATTENTION: If packages are not found in the new repositories they will be"
   echo "  uninstalled immediately after confirming the force upgrade."
   echo "- fixed bug in remove_package routine"
+  echo
+  echo "----------------------------------------"
+  echo "Version: 0.25"
+  echo "Date: 2023-11-12"
+  echo
+  echo "- Corrections for spelling & grammatical errors in user-visible statements"
+  echo "----------------------------------------"
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
