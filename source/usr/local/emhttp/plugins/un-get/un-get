@@ -260,7 +260,7 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
         PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -269,7 +269,7 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
         PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -342,7 +342,7 @@ ${p}"
         fi
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -369,7 +369,7 @@ ${p}"
       if [[ "$response" =~ ^(yes|y)$ ]]; then
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -378,7 +378,7 @@ ${p}"
         done
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -536,223 +536,14 @@ usage_remove() {
 
 version() {
   echo "Written by Christoph Hummer for unRAID."
-  echo "Version: 0.25"
-  echo "Date: 2023-11-12"
+  echo "$(grep "^Version: " /usr/local/emhttp/plugins/un-get/changelog | sort -V | tail -1)"
+  echo "$(grep "^Date: " /usr/local/emhttp/plugins/un-get/changelog | sort -V | tail -1)"
   echo "Dual-licensed under MIT or UNLICENSE."
   exit 0
 }
 
 changelog() {
-  echo "Version: 0.01"
-  echo "Date: 2022-08-20"
-  echo
-  echo "- Initial release from pkg-get"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.02"
-  echo "Date: 2022-08-22"
-  echo
-  echo "- Changed name from pkg-get to un-get - because well unRAID needs un-get"
-  echo "- Changed from Slackware 15 to Current"
-  echo "- Created sources.list file to support multiple repositories"
-  echo "- Added Conraid's repository to sources.list by default"
-  echo "- Changed installation directory to /boot/extra"
-  echo "- Redone download, installation and remove functions"
-  echo "- Added 'installed' option, to list installed packages by un-get"
-  echo "- Added 'changelog' option"
-  echo "- Changed search to show both installed and non installed packages which"
-  echo "  are available in repositories"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.03"
-  echo "Date: 2022-08-22"
-  echo
-  echo "- Added 'upgrade' function"
-  echo "- Speed up search by a bit"
-  echo "- Clarified remove message when no packages were found"
-  echo "- Fixed bug where packages won't be removed after calling 'remove' function"
-  echo "- Fixed bug where error was displayed if installedpackages_list file where"
-  echo "  not in place"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.04"
-  echo "Date: 2022-08-23"
-  echo
-  echo "- search function - made it more clear if packages are already installed"
-  echo "  that they not qualify for reinstallation through un-get"
-  echo "- install function - throw a real error if package is found which is"
-  echo "  not qualifying for reinstallation through un-get"
-  echo "- upgrade function - added message when all packages are up-to-date"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.05"
-  echo "Date: 2022-08-23"
-  echo
-  echo "- upgrade function - fixed upgrade message issue"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.06"
-  echo "Date: 2022-08-23"
-  echo
-  echo "- upgrade function - fixed bug in upgrade package detection"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.07"
-  echo "Date: 2022-08-23"
-  echo
-  echo "- changed repo to Slackware 15.0"
-  echo "- remove old package lists from repositories which are not found"
-  echo "  in sources.list"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.08"
-  echo "Date: 2022-08-24"
-  echo
-  echo "- fixed bug so that un-get pulls always the latest package"
-  echo "  regardless from which repository"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.09"
-  echo "Date: 2022-08-25a"
-  echo
-  echo "- remove duplicate entries for packages which are not qualifying"
-  echo "  for installation"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.10"
-  echo "Date: 2022-08-25b"
-  echo
-  echo "- fixed bug in search where some packages were marked as not"
-  echo "  qualifying for installation"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.11"
-  echo "Date: 2022-08-26"
-  echo
-  echo "- added cleanup function"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.12"
-  echo "Date: 2022-08-27"
-  echo
-  echo "- fixed bug where on installation some packages would download the"
-  echo "  the wrong file"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.13"
-  echo "Date: 2022-08-27"
-  echo
-  echo "- fixed bug in upgrade routine"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.14"
-  echo "Date: 2022-09-25"
-  echo
-  echo "- fixed bug where some packages would not install properly"
-  echo "- fixed bug where some packages are not found properly"
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.15"
-  echo "Date: 2022-09-26"
-  echo
-  echo "- fixed bug where some packages would not download/install properly"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.16"
-  echo "Date: 2022-10-02"
-  echo
-  echo "- fixed bug in update routine where some packages won't update properly"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.17"
-  echo "Date: 2022-10-12"
-  echo
-  echo "- fixed bug in checksum routine where some packages won't install"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.18"
-  echo "Date: 2022-10-27"
-  echo
-  echo "- fixed a few typos"
-  echo "- fix for search/install routine when package list doesn't follow the"
-  echo "  Slackware standard"
-  echo "- minor changes and cleanup to search/install/upgrade routine"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.19"
-  echo "Date: 2022-11-10"
-  echo
-  echo "- fixed bug in install routine if package is found in multiple sources"
-  echo "  where the correct version is downloaded but installation fails"
-  echo "- fixed bug in install routine which doesn't always install latest version"
-  echo "  if package is available in multiple sources"
-  echo "- fixed bug in upgrade routine which doesn't always install latest version"
-  echo "  if package is available in multiple source"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.20"
-  echo "Date: 2022-11-13"
-  echo
-  echo "- fixed bug in update routine for commented and empty lines"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.21"
-  echo "Date: 2023-02-02"
-  echo
-  echo "- fixed bug for repositories with .sha256 files"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.22"
-  echo "Date: 2023-03-17"
-  echo
-  echo "- fixed bug where packages are not installing correctly if line"
-  echo "  is commented in sources.list"
-  echo
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.23"
-  echo "Date: 2023-03-26"
-  echo
-  echo "- another bugfix for commented line(s) in sources.list"
-  echo "----------------------------------------"
-  echo
-  echo "Version: 0.24"
-  echo "Date: 2023-07-19"
-  echo
-  echo "- added '--force'/'-f' option to 'upgrade' to force an update from packages"
-  echo "  The option 'un-get upgrade --force' will pull all existing packages again"
-  echo "  but don't install them in case you change from Slackware 15.0 to current"
-  echo "  or vice versa. The new packages will be installed on reboot."
-  echo "  ATTENTION: If packages are not found in the new repositories they will be"
-  echo "  uninstalled immediately after confirming the force upgrade."
-  echo "- fixed bug in remove_package routine"
-  echo
-  echo "----------------------------------------"
-  echo "Version: 0.25"
-  echo "Date: 2023-11-12"
-  echo
-  echo "- Corrections for spelling & grammatical errors in user-visible statements"
-  echo "----------------------------------------"
+cat /usr/local/emhttp/plugins/un-get/changelog
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then

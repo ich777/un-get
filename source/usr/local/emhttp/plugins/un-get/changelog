@@ -1,0 +1,220 @@
+Version: 0.01
+Date: 2022-08-20
+
+- Initial release from pkg-get
+
+----------------------------------------
+
+Version: 0.02
+Date: 2022-08-22
+
+- Changed name from pkg-get to un-get - because well unRAID needs un-get
+- Changed from Slackware 15 to Current
+- Created sources.list file to support multiple repositories
+- Added Conraid's repository to sources.list by default
+- Changed installation directory to /boot/extra
+- Redone download, installation and remove functions
+- Added 'installed' option, to list installed packages by un-get
+- Added 'changelog' option
+- Changed search to show both installed and non installed packages which
+  are available in repositories
+
+----------------------------------------
+
+Version: 0.03
+Date: 2022-08-22
+
+- Added 'upgrade' function
+- Speed up search by a bit
+- Clarified remove message when no packages were found
+- Fixed bug where packages won't be removed after calling 'remove' function
+- Fixed bug where error was displayed if installedpackages_list file where
+  not in place
+
+----------------------------------------
+
+Version: 0.04
+Date: 2022-08-23
+
+- search function - made it more clear if packages are already installed
+  that they not qualify for reinstallation through un-get
+- install function - throw a real error if package is found which is
+  not qualifying for reinstallation through un-get
+- upgrade function - added message when all packages are up-to-date
+
+----------------------------------------
+
+Version: 0.05
+Date: 2022-08-23
+
+- upgrade function - fixed upgrade message issue
+
+----------------------------------------
+
+Version: 0.06
+Date: 2022-08-23
+
+- upgrade function - fixed bug in upgrade package detection
+
+----------------------------------------
+
+Version: 0.07
+Date: 2022-08-23
+
+- changed repo to Slackware 15.0
+- remove old package lists from repositories which are not found
+  in sources.list
+
+----------------------------------------
+
+Version: 0.08
+Date: 2022-08-24
+
+- fixed bug so that un-get pulls always the latest package
+  regardless from which repository
+
+----------------------------------------
+
+Version: 0.09
+Date: 2022-08-25a
+
+- remove duplicate entries for packages which are not qualifying
+  for installation
+
+----------------------------------------
+
+Version: 0.10
+Date: 2022-08-25b
+
+- fixed bug in search where some packages were marked as not
+  qualifying for installation
+
+----------------------------------------
+
+Version: 0.11
+Date: 2022-08-26
+
+- added cleanup function
+
+----------------------------------------
+
+Version: 0.12
+Date: 2022-08-27
+
+- fixed bug where on installation some packages would download the
+  the wrong file
+
+----------------------------------------
+
+Version: 0.13
+Date: 2022-08-27
+
+- fixed bug in upgrade routine
+
+----------------------------------------
+
+Version: 0.14
+Date: 2022-09-25
+
+- fixed bug where some packages would not install properly
+- fixed bug where some packages are not found properly
+----------------------------------------
+
+Version: 0.15
+Date: 2022-09-26
+
+- fixed bug where some packages would not download/install properly
+
+----------------------------------------
+
+Version: 0.16
+Date: 2022-10-02
+
+- fixed bug in update routine where some packages won't update properly
+
+----------------------------------------
+
+Version: 0.17
+Date: 2022-10-12
+
+- fixed bug in checksum routine where some packages won't install
+
+----------------------------------------
+
+Version: 0.18
+Date: 2022-10-27
+
+- fixed a few typos
+- fix for search/install routine when package list doesn't follow the
+  Slackware standard
+- minor changes and cleanup to search/install/upgrade routine
+
+----------------------------------------
+
+Version: 0.19
+Date: 2022-11-10
+
+- fixed bug in install routine if package is found in multiple sources
+  where the correct version is downloaded but installation fails
+- fixed bug in install routine which doesn't always install latest version
+  if package is available in multiple sources
+- fixed bug in upgrade routine which doesn't always install latest version
+  if package is available in multiple source
+
+----------------------------------------
+
+Version: 0.20
+Date: 2022-11-13
+
+- fixed bug in update routine for commented and empty lines
+
+----------------------------------------
+
+Version: 0.21
+Date: 2023-02-02
+
+- fixed bug for repositories with .sha256 files
+
+----------------------------------------
+
+Version: 0.22
+Date: 2023-03-17
+
+- fixed bug where packages are not installing correctly if line
+  is commented in sources.list
+
+----------------------------------------
+
+Version: 0.23
+Date: 2023-03-26
+
+- another bugfix for commented line(s) in sources.list
+----------------------------------------
+
+Version: 0.24
+Date: 2023-07-19
+
+- added '--force'/'-f' option to 'upgrade' to force an update from packages
+  The option 'un-get upgrade --force' will pull all existing packages again
+  but don't install them in case you change from Slackware 15.0 to current
+  or vice versa. The new packages will be installed on reboot.
+  ATTENTION: If packages are not found in the new repositories they will be
+  uninstalled immediately after confirming the force upgrade.
+- fixed bug in remove_package routine
+
+----------------------------------------
+Version: 0.25
+Date: 2023-11-12
+
+- Corrections for spelling & grammatical errors in user-visible statements
+----------------------------------------
+
+----------------------------------------
+Version: 0.26
+Date: 2024-04-09
+
+- Fixed bug where some packages won't install properly if multiple are found
+  in repositories
+- Move changelog into separate file
+- Read version from changelog
+----------------------------------------
