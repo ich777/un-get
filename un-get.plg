@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "un-get">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2024.04.09">
+  <!ENTITY version   "2024.07.21">
   <!ENTITY gitURL    "https://github.com/&author;/&name;/releases/download">
   <!ENTITY pluginURL "https://raw.githubusercontent.com/&author;/un-get/master/&name;.plg">
   <!ENTITY md5       "2d91786691cee13a53bf8c29bd906897">
@@ -13,6 +13,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.10.3" support="https://github.com/ich777/un-get">
 
 <CHANGES>
+
+###2024.07.21
+- Change default repo from 15.0 to current for new installations. This is necessary for 7.0.0-beta.1+. If you are on 7.0.0-beta.1+ change your sources list from 15.0 to current
 
 ###2024.04.09
 - Fixed bug where some packages won't install properly if multiple are found in repositories
@@ -155,7 +158,7 @@ if [ ! -f /boot/config/plugins/un-get/sources.list ]; then
   if [ ! -d /boot/config/plugins/un-get ]; then
     mkdir -p /boot/config/plugins/un-get
   fi
-  echo "https://mirrors.slackware.com/slackware/slackware64-15.0/slackware64/ 15.0
+  echo "https://mirrors.slackware.com/slackware/slackware64-current/slackware64/ current
 https://slackers.it/repository/slackware64-current/ conraid" &gt; /boot/config/plugins/un-get/sources.list
 fi
 
