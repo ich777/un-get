@@ -260,7 +260,7 @@ install() {
     if [[ "$response" =~ ^(yes|y)$ ]]; then
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z_]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
         PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -269,7 +269,7 @@ install() {
       done
       for p in ${PACKAGE_LIST}
       do
-        LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
+        LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z_]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
         PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
         TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
         REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -342,7 +342,7 @@ ${p}"
         fi
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z_]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -369,7 +369,7 @@ ${p}"
       if [[ "$response" =~ ^(yes|y)$ ]]; then
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z_]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
@@ -378,7 +378,7 @@ ${p}"
         done
         for p in ${UPGRADE_PACKAGES}
         do
-          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
+          LAT_V="$(grep -R -H -i -w "$p-[0-9a-zA-Z_]\+" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256"  | rev | cut -d '/' -f1 | rev | grep "^$p-[0-9]\+" | sort -V | tail -1)"
           PACKAGE="$(grep -R -H -i -w "$LAT_V" /tmp/un-get/ | awk '{print $1, $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | sort -V | tail -1)"
           TOP_URL="$(awk '{print $2}' <<< ${PACKAGE} | sed 's/^[.]//')"
           REPO_LINE="$(awk '{print $2}' /boot/config/plugins/un-get/sources.list | grep -n "$(awk '{print $1}' <<< "${PACKAGE}" | cut -d ':' -f1 | sed 's:.*-::' | sort -V | tail -1)" | grep -vE '^[0-9]+:(http://|https://|ftp://|ftps://|www.|ftp.)' | cut -d ':' -f1)"
