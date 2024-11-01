@@ -218,3 +218,11 @@ Date: 2024-04-09
 - Move changelog into separate file
 - Read version from changelog
 ----------------------------------------
+
+----------------------------------------
+Version: 0.27
+Date: 2024-11-01
+
+- Merge PR from cloudiful to fix some packages may be skipped on installation
+  and install wrong package instead
+----------------------------------------
