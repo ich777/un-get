@@ -226,3 +226,11 @@ Date: 2024-11-01
 - Merge PR from cloudiful to fix some packages may be skipped on installation
   and install wrong package instead
 ----------------------------------------
+
+----------------------------------------
+Version: 0.28
+Date: 2024-11-22
+
+- Merge PR from adapowers
+  cleanup(): Multiple match resilience
+----------------------------------------

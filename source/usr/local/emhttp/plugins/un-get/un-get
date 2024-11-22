@@ -395,7 +395,7 @@ ${p}"
     fi
   else
     echo "Nothing to upgrade, no packages which are installed by un-get found!"
-  fi 
+  fi
 }
 
 remove() {
@@ -441,7 +441,7 @@ cleanup() {
   PACKAGE_LIST_INSTALLED="$(cat /boot/config/plugins/un-get/installedpackages_list)"
   for p in ${BOOT_PKGS}
   do
-    if [ ! $(grep ${p%.*} <<< "${INSTALLED_PKGS}") ]; then
+        if [ $(grep "${p%.*}" <<< "${INSTALLED_PKGS}" | wc -l) -eq 0 ]; then
       if [ -z "${CLEANUP_LIST}" ]; then
         CLEANUP_LIST="${p}"
       else
@@ -464,7 +464,7 @@ cleanup() {
     echo "Please wait, checking if package list is up-to-date...!"
     for p in ${PACKAGE_LIST_INSTALLED}
     do
-      if [ ! $(grep ${p%.*} <<< "${INSTALLED_PKGS}") ]; then
+      if [ $(grep "${p%.*}" <<< "${INSTALLED_PKGS}" | wc -l) -eq 0 ]; then
         sed -i "/$p/d" /boot/config/plugins/un-get/installedpackages_list
       fi
     done
