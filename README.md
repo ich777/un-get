@@ -6,7 +6,8 @@ Start by issuing: `un-get --help` in a unRAID Terminal to get available commands
 
 **Please Note:** un-get allows only installation of packages which are not already installed on your system and only allows removing packages which are installed by un-get!
 
-**Other Repositories:** You can also add other repositories which follow the Slackware standard, even if it's hosted on GitHub like: https://github.com/ich777/slackware
+**Other Repositories:** You can also add other repositories which follow the Slackware standard, even if it's hosted on GitHub like: https://github.com/ich777/slackware  
+To do this modify `/boot/config/plugins/un-get/sources.list` and add an URL per line.
 
 **REPORTING BUGS/ISSUES:**
 If you find a bug or have some kind of issue with un-get please use the issue tracker here on GitHub.
