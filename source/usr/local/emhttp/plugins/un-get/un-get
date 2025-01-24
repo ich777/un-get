@@ -230,15 +230,28 @@ search() {
 }
 
 install() {
+  FORCE=0
+  PACKAGES_TO_INSTALL=()
+
+  for arg in "$@"; do
+    if [[ "$arg" == "--force" || "$arg" == "-f" ]]; then
+      FORCE=1
+    else
+      PACKAGES_TO_INSTALL+=("$arg")
+    fi
+  done
+
   PACKAGES_AVAILABLE="$(cat $(find /tmp/un-get/ -type f -name 'filelist-*') | awk '{print $NF}' | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256" | cut -d '.' -f1- | grep -E ".tbz|.tlz|.tgz|.txz" | grep -v -E ".*\.asc|.*\.md5|.*\.sha256")"
-  for p in $@
+  for p in "${PACKAGES_TO_INSTALL[@]}"
   do
     package_available_check $p
     if [ "$?" == 0 ]; then
-      package_installed_check $p
-      if [ "$?" == 0 ]; then
-        echo "Package $p is already installed on your system! ABORT!"
-        exit 1
+      if [ "$FORCE" -eq 0 ]; then
+        package_installed_check $p
+        if [ "$?" == 0 ]; then
+          echo "Package $p is already installed on your system! Use --force to override."
+          exit 1
+        fi
       fi
       if [ ! -z "${PACKAGE_LIST}" ]; then
         PACKAGE_LIST="${PACKAGE_LIST} $p"
@@ -254,6 +267,9 @@ install() {
     fi
   done
   if [ -z "${FAILED_LIST}" ]; then
+    if [ "$FORCE" -eq 1 ]; then
+      echo "WARNING: Using --force or -f may overwrite existing packages and cause system instability!"
+    fi
     echo "The following package(s) will be installed: ${PACKAGE_LIST}"
     read -r -p "Are you sure? [y/N] " response
     response=${response,,}
@@ -483,6 +499,8 @@ usage_general() {
   echo "Most used commands are:"
   echo "  update    - Updates the packages list locally"
   echo "  install   - Downloads and installs packages"
+  echo "              Adding '--force' or '-f' will force install even if"
+  echo "              the package is already installed (may overwrite files)"
   echo "  upgrade   - Upgrades packages installed by un-get"
   echo "              Adding '--force' or '-f' will force an upgrade from all"
   echo "              packages, the packages will be installed after a reboot."
@@ -501,6 +519,7 @@ usage_general() {
   echo "  un-get update"
   echo "  un-get search python"
   echo "  un-get install python3 python-pip"
+  echo "  un-get install --force rsync"
   echo "  un-get remove python3 python-pip"
   echo "  un-get installed"
   echo "  un-get upgrade"
@@ -524,6 +543,7 @@ usage_install() {
   echo "Usage example:"
   echo "  un-get install python3"
   echo "  un-get install python-pip python-setuptools"
+  echo "  un-get install --force rsync"
   exit 0
 }
 
